@@ -1,23 +1,24 @@
 package kacaw
-
 import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"path/filepath"
-  "os"
-  "io"
-  "mime/multipart"
 )
 
 type Router struct {
-	Routes map[string]map[string]http.HandlerFunc
+	Routes     map[string]map[string]http.HandlerFunc
+	staticPath string
 }
 
 type Context struct {
 	ResponseWriter http.ResponseWriter
 	Request        *http.Request
+	staticPath     string
 }
 
 func Default() *Router {
@@ -46,6 +47,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		context := &Context{
 			ResponseWriter: w,
 			Request:        req,
+			staticPath:     r.staticPath,
 		}
 		route(context.ResponseWriter, context.Request)
 	} else {
@@ -107,14 +109,43 @@ func (r *Router) LoadHTMLFiles(filenames ...string) {
 		}
 		filename := filepath.Base(templateFile)
 		r.GET("/"+filename, func(w http.ResponseWriter, req *http.Request) {
-			tmpl.Execute(w, nil)
+			context := &Context{
+				ResponseWriter: w,
+				Request:        req,
+				staticPath:     r.staticPath,
+			}
+			tmpl.Execute(w, context)
 		})
 	}
 }
 
-func (r *Router) Static(path, directory string) {
-	fs := http.StripPrefix(path, http.FileServer(http.Dir(directory)))
-	r.GET(path+"/{filepath:*}", fs.ServeHTTP)
+func (r *Router) Static(filenames ...string) {
+	templates := []string{}
+	for _, filename := range filenames {
+		matches, err := filepath.Glob(filename)
+		if err != nil {
+			fmt.Println("Error:", err)
+			continue
+		}
+		templates = append(templates, matches...)
+	}
+
+	for _, templateFile := range templates {
+		tmpl, err := template.ParseFiles(templateFile)
+		if err != nil {
+			fmt.Println("Error:", err)
+			continue
+		}
+		filename := filepath.Base(templateFile)
+		r.GET("/"+filename, func(w http.ResponseWriter, req *http.Request) {
+			context := &Context{
+				ResponseWriter: w,
+				Request:        req,
+				staticPath:     r.staticPath,
+			}
+			tmpl.Execute(w, context)
+		})
+	}
 }
 
 func Redirect(w http.ResponseWriter, req *http.Request, url string) {
