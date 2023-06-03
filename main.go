@@ -1,4 +1,5 @@
 package kacaw
+
 import (
 	"encoding/json"
 	"fmt"
@@ -12,8 +13,8 @@ import (
 )
 
 type Router struct {
-	Routes       map[string]map[string]http.HandlerFunc
-	staticPath   string
+	Routes        map[string]map[string]http.HandlerFunc
+	staticPath    string
 	CookieManager CookieManager
 }
 
@@ -102,6 +103,34 @@ func (r *Router) GET(path string, handler http.HandlerFunc) {
 
 func (r *Router) POST(path string, handler http.HandlerFunc) {
 	r.registerHandler("POST", path, handler)
+}
+
+func (r *Router) HEAD(path string, handler http.HandlerFunc) {
+	r.registerHandler("HEAD", path, handler)
+}
+
+func (r *Router) PUT(path string, handler http.HandlerFunc) {
+	r.registerHandler("PUT", path, handler)
+}
+
+func (r *Router) DELETE(path string, handler http.HandlerFunc) {
+	r.registerHandler("DELETE", path, handler)
+}
+
+func (r *Router) CONNECT(path string, handler http.HandlerFunc) {
+	r.registerHandler("CONNECT", path, handler)
+}
+
+func (r *Router) OPTIONS(path string, handler http.HandlerFunc) {
+	r.registerHandler("OPTIONS", path, handler)
+}
+
+func (r *Router) TRACE(path string, handler http.HandlerFunc) {
+	r.registerHandler("TRACE", path, handler)
+}
+
+func (r *Router) PATCH(path string, handler http.HandlerFunc) {
+	r.registerHandler("PATCH", path, handler)
 }
 
 func (r *Router) Run(port string) {
