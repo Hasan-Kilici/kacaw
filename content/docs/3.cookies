@@ -1,0 +1,57 @@
+ # Cookies
+ Cookie Examples in Kacaw
+::code-group
+```go [readCookie.go]
+package main
+
+import (
+	"fmt"
+	"github.com/Hasan-Kilici/kacaw"
+	"net/http"
+)
+
+func main() {
+	router := kacaw.Default()
+
+	router.GET("/", func(w http.ResponseWriter, req *http.Request) {
+		cookie, err := router.GetCookie(req, "myCookie")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		value := cookie.Value
+		fmt.Fprintf(w, "Cookie value: %s", value)
+	})
+
+	router.Run(":8080")
+}
+```
+```go [writeCookie.go]
+import (
+	"fmt"
+	"github.com/Hasan-Kilici/kacaw"
+	"net/http"
+    "time"
+)
+
+func main() {
+	router := kacaw.Default()
+
+	router.GET("/", func(w http.ResponseWriter, req *http.Request) {
+		cookie := &Cookie{
+			Name:     "myCookie",
+			Value:    "Kacaw",
+			Path:     "/",
+			Expires:  time.Now().Add(24 * time.Hour),
+			HttpOnly: true,
+		}
+
+		router.SetCookie(w, cookie)
+		fmt.Fprintf(w, "Cookie added: myCookie=Kacaw")
+	})
+
+	router.Run(":8080")
+}
+```
+::
