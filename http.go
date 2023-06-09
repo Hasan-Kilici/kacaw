@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-  "html/template"
+  	"html/template"
 	"net/http"
 	"time"
 )
@@ -142,6 +142,21 @@ func (r *Router) registerHandler(method, path string, handler http.HandlerFunc) 
 	}
 
 	r.Routes[method][path] = handler
+}
+
+func (r *Router) SaveFile(file multipart.File, header *multipart.FileHeader, path string) error {
+	out, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Router) enableCaching() {
